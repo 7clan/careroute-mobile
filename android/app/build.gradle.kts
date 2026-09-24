@@ -7,7 +7,9 @@ plugins {
 android {
     namespace = "com.careeroute.careroute_mobile"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // The NDK is intentionally NOT configured: this app has no native
+    // C/C++ sources (all plugins ship prebuilt AARs), and pinning an
+    // ndkVersion would force an unnecessary multi-GB download.
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
