@@ -185,8 +185,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           : const Text('Create account'),
                     ),
                     const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    // Wrap: on narrow phones / large text the link
+                    // moves to the next line instead of overflowing.
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text(
                           'Already registered?',

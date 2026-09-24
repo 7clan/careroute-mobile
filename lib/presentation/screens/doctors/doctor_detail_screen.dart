@@ -224,20 +224,38 @@ class _NameBlock extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        Row(
+        // Wrap: the status badge drops to a second line on narrow phones
+        // and large text scales instead of overflowing (the name block
+        // sits next to the avatar, so width is at a premium here).
+        Wrap(
+          spacing: 12,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Icon(Icons.star_rounded, size: 20, color: Colors.amber.shade700),
-            const SizedBox(width: 4),
             Semantics(
               label:
                   'Rated ${doctor.rating.toStringAsFixed(1)} out of 5 from '
                   '${doctor.reviewCount} reviews',
-              child: Text(
-                '${doctor.rating.toStringAsFixed(1)} · ${doctor.reviewCount} reviews',
-                style: theme.textTheme.bodyMedium,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.star_rounded,
+                    size: 20,
+                    color: Colors.amber.shade700,
+                  ),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      '${doctor.rating.toStringAsFixed(1)} · ${doctor.reviewCount} reviews',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(width: 12),
             if (!doctor.isAcceptingNewPatients)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -298,7 +316,7 @@ class _StatsRow extends StatelessWidget {
           Expanded(
             child: _Stat(
               icon: Icons.payments_outlined,
-              value: '\$${doctor.consultationFee.toStringAsFixed(0)}',
+              value: r'$' + doctor.consultationFee.toStringAsFixed(0),
               label: 'Consultation',
             ),
           ),
