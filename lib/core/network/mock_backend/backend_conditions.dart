@@ -29,7 +29,8 @@ class BackendConditions {
   /// Artificial per-request latency — makes loading states observable.
   final Duration latency;
 
-  /// When set, requests hang for this long so the Dio timeouts fire.
+  /// When non-null, responses never deliver data so the Dio timeouts
+  /// (configured on `BaseOptions`) are what abort the request.
   final Duration? timeoutAfter;
 
   bool get isHealthy =>
@@ -38,19 +39,27 @@ class BackendConditions {
       forceStatus == null &&
       timeoutAfter == null;
 
+  /// Sentinel that lets [copyWith] distinguish "not provided" from
+  /// "explicitly clear this field" for the nullable parameters.
+  static const _unset = Object();
+
   BackendConditions copyWith({
     bool? offline,
     bool? malformedResponse,
-    int? forceStatus,
+    Object? forceStatus = _unset,
     Duration? latency,
-    Duration? timeoutAfter,
+    Object? timeoutAfter = _unset,
   }) {
     return BackendConditions(
       offline: offline ?? this.offline,
       malformedResponse: malformedResponse ?? this.malformedResponse,
-      forceStatus: forceStatus ?? this.forceStatus,
+      forceStatus: identical(forceStatus, _unset)
+          ? this.forceStatus
+          : forceStatus as int?,
       latency: latency ?? this.latency,
-      timeoutAfter: timeoutAfter ?? this.timeoutAfter,
+      timeoutAfter: identical(timeoutAfter, _unset)
+          ? this.timeoutAfter
+          : timeoutAfter as Duration?,
     );
   }
 }
