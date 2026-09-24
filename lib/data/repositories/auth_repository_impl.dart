@@ -113,7 +113,12 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> logout() async {
     // Best effort remote logout — the local session is always cleared so a
     // failed network call can never keep the user signed in.
-    await _guard(() => dio.post<void>('/auth/logout'));
+    try {
+      await _guard(() => dio.post<void>('/auth/logout'));
+    } on AppException {
+      // The token could not be revoked remotely (offline / 5xx); the user
+      // is still signed out locally.
+    }
     await local.clear();
   }
 

@@ -75,9 +75,19 @@ class MockBackendAdapter implements HttpClientAdapter {
       await Future<void>.delayed(conditions.latency);
     }
 
-    // 3. Simulated hang — longer than the configured Dio timeouts.
+    // 3. Simulated hang — returns a response whose byte stream never
+    //    delivers data, so Dio's *receiveTimeout* (configured on
+    //    BaseOptions) is the component that aborts the request, exactly
+    //    like a real stalled socket.
     if (conditions.timeoutAfter != null) {
-      await Future<void>.delayed(conditions.timeoutAfter!);
+      final neverDelivers = Completer<Uint8List>().future.asStream();
+      return ResponseBody(
+        neverDelivers,
+        200,
+        headers: {
+          Headers.contentTypeHeader: ['application/json; charset=utf-8'],
+        },
+      );
     }
 
     // 4. Forced status / malformed body — exercised by tests & simulator.

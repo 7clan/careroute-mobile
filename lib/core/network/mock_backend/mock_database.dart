@@ -308,7 +308,19 @@ class MockDatabase {
   _UserRow? _userForToken(String? token) {
     if (token == null) return null;
     final row = _tokens[token];
-    if (row == null) return null;
+    if (row == null) {
+      // Tokens are self-describing (`mt_<userId>_<expiryMs>`), like a
+      // signed JWT: an expired token is rejected even if it was pruned
+      // from the active session store.
+      final embedded = _parseTokenExpiry(token);
+      if (embedded != null && DateTime.now().isAfter(embedded)) {
+        throw const MockHttpError(401, {
+          'code': 'token_expired',
+          'message': 'The session has expired.',
+        });
+      }
+      return null;
+    }
     if (row.isExpired) {
       // Expired tokens are pruned lazily, like a real session store.
       _tokens.remove(token);
@@ -318,6 +330,15 @@ class MockDatabase {
       });
     }
     return _usersById[row.userId];
+  }
+
+  DateTime? _parseTokenExpiry(String token) {
+    final parts = token.split('_');
+    if (parts.length != 3 || parts[0] != 'mt') return null;
+    final milliseconds = int.tryParse(parts[2]);
+    return milliseconds == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(milliseconds);
   }
 
   Map<String, Object?> _register(Map<String, dynamic> body) {

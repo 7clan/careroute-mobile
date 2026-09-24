@@ -63,21 +63,43 @@ abstract final class DioExceptionMapper {
           stackTrace: stack,
         );
       case 401:
-        return UnauthorizedException(cause: error, stackTrace: stack);
+        return UnauthorizedException(
+          serverMessage: _serverMessage(body),
+          cause: error,
+          stackTrace: stack,
+        );
       case 403:
-        return ForbiddenException(cause: error, stackTrace: stack);
+        return ForbiddenException(
+          serverMessage: _serverMessage(body),
+          cause: error,
+          stackTrace: stack,
+        );
       case 404:
-        return NotFoundException(cause: error, stackTrace: stack);
+        return NotFoundException(
+          serverMessage: _serverMessage(body),
+          cause: error,
+          stackTrace: stack,
+        );
       default:
         if (status >= 500) {
           return ServerException(
             statusCode: status,
+            serverMessage: _serverMessage(body),
             cause: error,
             stackTrace: stack,
           );
         }
         return UnknownException(cause: error, stackTrace: stack);
     }
+  }
+
+  /// Extracts the API's user-facing message when the backend supplies one.
+  ///
+  /// The CareRoute API contract guarantees these strings are safe to render
+  /// (never stack traces or internal details).
+  static String? _serverMessage(Map<String, dynamic> body) {
+    final message = body['message'];
+    return message is String && message.trim().isNotEmpty ? message : null;
   }
 
   /// Dio sometimes wraps adapter-level exceptions as `unknown` with the

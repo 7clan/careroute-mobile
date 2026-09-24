@@ -35,26 +35,41 @@ class TimeoutException extends AppException {
 
 /// Missing or expired credentials (HTTP 401).
 class UnauthorizedException extends AppException {
-  const UnauthorizedException({super.cause, super.stackTrace});
+  const UnauthorizedException({
+    this.serverMessage,
+    super.cause,
+    super.stackTrace,
+  });
+
+  /// User-safe message supplied by the API, when the backend provides one
+  /// (e.g. "These credentials do not match our records.").
+  final String? serverMessage;
 
   @override
-  String get userMessage => 'Your session has expired. Please sign in again.';
+  String get userMessage =>
+      serverMessage ?? 'Your session has expired. Please sign in again.';
 }
 
 /// Authenticated but not allowed to perform the action (HTTP 403).
 class ForbiddenException extends AppException {
-  const ForbiddenException({super.cause, super.stackTrace});
+  const ForbiddenException({this.serverMessage, super.cause, super.stackTrace});
+
+  final String? serverMessage;
 
   @override
-  String get userMessage => "You don't have permission to perform this action.";
+  String get userMessage =>
+      serverMessage ?? "You don't have permission to perform this action.";
 }
 
 /// Requested resource does not exist (HTTP 404).
 class NotFoundException extends AppException {
-  const NotFoundException({super.cause, super.stackTrace});
+  const NotFoundException({this.serverMessage, super.cause, super.stackTrace});
+
+  final String? serverMessage;
 
   @override
-  String get userMessage => 'What you were looking for is no longer available.';
+  String get userMessage =>
+      serverMessage ?? 'What you were looking for is no longer available.';
 }
 
 /// The API rejected the request payload (HTTP 400 / 422).
@@ -77,13 +92,19 @@ class ValidationException extends AppException {
 
 /// Server-side failure (HTTP 5xx).
 class ServerException extends AppException {
-  const ServerException({this.statusCode, super.cause, super.stackTrace});
+  const ServerException({
+    this.statusCode,
+    this.serverMessage,
+    super.cause,
+    super.stackTrace,
+  });
 
   final int? statusCode;
+  final String? serverMessage;
 
   @override
   String get userMessage =>
-      'Something went wrong on our side. Please try again in a moment.';
+      serverMessage ?? 'Something went wrong on our side. Please try again.';
 }
 
 /// The response could not be decoded / parsed.
